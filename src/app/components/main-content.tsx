@@ -121,22 +121,13 @@ function Author({ authors }: { authors: { name: string; avatar: string }[] }) {
         padding: '16px',
       }}
     >
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
         <AvatarGroup max={3}>
           {authors.map((author, index) => (
-            <Avatar
-              key={index}
-              alt={author.name}
-              src={author.avatar}
-              sx={{ width: 24, height: 24 }}
-            />
+            <Avatar key={index} alt={author.name} src={author.avatar} sx={{ width: 24, height: 24 }} />
           ))}
         </AvatarGroup>
-        <Typography variant="caption">
-          {authors.map((author) => author.name).join(', ')}
-        </Typography>
+        <Typography variant="caption">{authors.map((author) => author.name).join(', ')}</Typography>
       </Box>
       <Typography variant="caption">July 14, 2021</Typography>
     </Box>
@@ -165,9 +156,7 @@ export function Search() {
 }
 
 export default function MainContent() {
-  const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(
-    null,
-  );
+  const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(null);
 
   const handleFocus = (index: number) => {
     setFocusedCardIndex(index);
@@ -373,9 +362,7 @@ export default function MainContent() {
           </SyledCard>
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
             <SyledCard
               variant="outlined"
               onFocus={() => handleFocus(3)}
@@ -399,11 +386,7 @@ export default function MainContent() {
                   <Typography gutterBottom variant="h6" component="div">
                     {cardData[3].title}
                   </Typography>
-                  <StyledTypography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
+                  <StyledTypography variant="body2" color="text.secondary" gutterBottom>
                     {cardData[3].description}
                   </StyledTypography>
                 </div>
@@ -433,11 +416,7 @@ export default function MainContent() {
                   <Typography gutterBottom variant="h6" component="div">
                     {cardData[4].title}
                   </Typography>
-                  <StyledTypography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
+                  <StyledTypography variant="body2" color="text.secondary" gutterBottom>
                     {cardData[4].description}
                   </StyledTypography>
                 </div>

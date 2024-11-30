@@ -146,22 +146,13 @@ function Author({ authors }: { authors: { name: string; avatar: string }[] }) {
         justifyContent: 'space-between',
       }}
     >
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
         <AvatarGroup max={3}>
           {authors.map((author, index) => (
-            <Avatar
-              key={index}
-              alt={author.name}
-              src={author.avatar}
-              sx={{ width: 24, height: 24 }}
-            />
+            <Avatar key={index} alt={author.name} src={author.avatar} sx={{ width: 24, height: 24 }} />
           ))}
         </AvatarGroup>
-        <Typography variant="caption">
-          {authors.map((author) => author.name).join(', ')}
-        </Typography>
+        <Typography variant="caption">{authors.map((author) => author.name).join(', ')}</Typography>
       </Box>
       <Typography variant="caption">July 14, 2021</Typography>
     </Box>
@@ -169,9 +160,7 @@ function Author({ authors }: { authors: { name: string; avatar: string }[] }) {
 }
 
 export default function Latest() {
-  const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(
-    null,
-  );
+  const [focusedCardIndex, setFocusedCardIndex] = React.useState<number | null>(null);
 
   const handleFocus = (index: number) => {
     setFocusedCardIndex(index);
@@ -210,10 +199,7 @@ export default function Latest() {
                 className={focusedCardIndex === index ? 'Mui-focused' : ''}
               >
                 {article.title}
-                <NavigateNextRoundedIcon
-                  className="arrow"
-                  sx={{ fontSize: '1rem' }}
-                />
+                <NavigateNextRoundedIcon className="arrow" sx={{ fontSize: '1rem' }} />
               </TitleTypography>
               <StyledTypography variant="body2" color="text.secondary" gutterBottom>
                 {article.description}

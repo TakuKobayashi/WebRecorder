@@ -59,11 +59,7 @@ export default function Footer() {
           >
             <Box sx={{ width: { xs: '100%', sm: '60%' } }}>
               <SitemarkIcon />
-              <Typography
-                variant="body2"
-                gutterBottom
-                sx={{ fontWeight: 600, mt: 2 }}
-              >
+              <Typography variant="body2" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
                 Join the newsletter
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -87,12 +83,7 @@ export default function Footer() {
                   }}
                   sx={{ width: '250px' }}
                 />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  sx={{ flexShrink: 0 }}
-                >
+                <Button variant="contained" color="primary" size="small" sx={{ flexShrink: 0 }}>
                   Subscribe
                 </Button>
               </Stack>
@@ -179,36 +170,17 @@ export default function Footer() {
             <Link color="text.secondary" variant="body2" href="#">
               Privacy Policy
             </Link>
-            <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>
-              &nbsp;•&nbsp;
-            </Typography>
+            <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>&nbsp;•&nbsp;</Typography>
             <Link color="text.secondary" variant="body2" href="#">
               Terms of Service
             </Link>
             <Copyright />
           </div>
-          <Stack
-            direction="row"
-            spacing={1}
-            useFlexGap
-            sx={{ justifyContent: 'left', color: 'text.secondary' }}
-          >
-            <IconButton
-              color="inherit"
-              size="small"
-              href="https://github.com/mui"
-              aria-label="GitHub"
-              sx={{ alignSelf: 'center' }}
-            >
+          <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: 'left', color: 'text.secondary' }}>
+            <IconButton color="inherit" size="small" href="https://github.com/mui" aria-label="GitHub" sx={{ alignSelf: 'center' }}>
               <FacebookIcon />
             </IconButton>
-            <IconButton
-              color="inherit"
-              size="small"
-              href="https://x.com/MaterialUI"
-              aria-label="X"
-              sx={{ alignSelf: 'center' }}
-            >
+            <IconButton color="inherit" size="small" href="https://x.com/MaterialUI" aria-label="X" sx={{ alignSelf: 'center' }}>
               <TwitterIcon />
             </IconButton>
             <IconButton

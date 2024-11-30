@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --config .prettierrc --write \"src/**/*.{ts,js,tsx,jsx}\""
   },
   "dependencies": {
     "@emotion/react": "^11.13.5",
@@ -24,7 +25,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
     "gh-pages": "^6.1.1",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.1",
     "typescript": "^5"
   }
 }
