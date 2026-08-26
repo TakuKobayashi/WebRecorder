@@ -432,9 +432,9 @@ export default function RecordingApp() {
       <header className={styles.header}>
         <div className={styles.logo}>
           <span className={styles.logoDot} data-state={recordingState} aria-hidden="true" />
-          <span className={styles.logoText}>
+          <h1 className={styles.logoText}>
             WEB<span>RECORDER</span>
-          </span>
+          </h1>
         </div>
 
         <div className={styles.statusBar} role="status" aria-live="polite">

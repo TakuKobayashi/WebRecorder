@@ -12,9 +12,9 @@ import './globals.css';
 // ── Metadata ───────────────────────────────────────────────────────────────────
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://web-recorder.taptappun.workers.dev';
 const APP_NAME = 'WebRecorder';
-const TITLE = 'WebRecorder — Browser Screen Recorder';
+const TITLE = 'WebRecorder｜無料・インストール不要のブラウザ画面録画';
 const DESCRIPTION =
-  'Record your screen directly in the browser. Choose screen audio or microphone, get real-time speech-to-text transcription, and save your recording as a video file — no installation, no server required.';
+  'ブラウザだけで画面録画できる無料のWebツール。画面音声・マイク、WebM・MP4、リアルタイム文字起こしに対応。インストールや会員登録は不要で、録画データは端末内で処理します。';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -24,6 +24,9 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description: DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
 
   keywords: [
     'screen recorder',
@@ -35,11 +38,26 @@ export const metadata: Metadata = {
     'mediarecorder',
     'no install',
     'online screen recorder',
+    '画面録画',
+    'ブラウザ 画面録画',
+    'オンライン スクリーンレコーダー',
+    '無料 画面録画',
+    'WebM 録画',
+    'MP4 録画',
+    'リアルタイム文字起こし',
   ],
 
   authors: [{ name: APP_NAME }],
   creator: APP_NAME,
   publisher: APP_NAME,
+  category: 'productivity',
+  classification: 'Screen recording and transcription tool',
+  referrer: 'origin-when-cross-origin',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 
   // ── Open Graph ───────────────────────────────────────────
   openGraph: {
@@ -48,13 +66,14 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: APP_NAME,
     type: 'website',
-    locale: 'en_US',
+    locale: 'ja_JP',
+    alternateLocale: ['en_US'],
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: `${APP_NAME} — Browser Screen Recorder`,
+        url: '/og.png',
+        width: 1728,
+        height: 907,
+        alt: 'WebRecorder — ブラウザだけで、かんたん画面録画',
         type: 'image/png',
       },
     ],
@@ -65,7 +84,12 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
-    images: ['/og-image.png'],
+    images: [
+      {
+        url: '/og.png',
+        alt: 'WebRecorder — ブラウザだけで、かんたん画面録画',
+      },
+    ],
   },
 
   // ── Robots ───────────────────────────────────────────────
@@ -81,19 +105,9 @@ export const metadata: Metadata = {
     },
   },
 
-  // ── PWA / App metadata ───────────────────────────────────
+  // ── App metadata ─────────────────────────────────────────
   applicationName: APP_NAME,
-  category: 'productivity',
-
-  // ── Icons ────────────────────────────────────────────────
-  icons: {
-    icon: [
-      { url: '/favicon.ico' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-  },
+  manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {
@@ -121,7 +135,7 @@ const themeInitScript = `
 // ── Layout ─────────────────────────────────────────────────────────────────────
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ja" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
