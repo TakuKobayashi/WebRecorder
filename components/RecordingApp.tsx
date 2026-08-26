@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from '@/styles/RecordingApp.module.css';
+import { detectLocale, messages, type Locale, type MessageKey } from '@/lib/i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -33,13 +34,6 @@ declare global {
     onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
     onend: (() => void) | null;
     onstart: (() => void) | null;
-  }
-  interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList;
-    resultIndex: number;
-  }
-  interface SpeechRecognitionErrorEvent extends Event {
-    error: string;
   }
 }
 
@@ -94,6 +88,7 @@ export default function RecordingApp() {
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [browserLang, setBrowserLang] = useState('');
   const [theme, setTheme] = useState<Theme>('light');
+  const [locale, setLocale] = useState<Locale>('en');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -125,6 +120,26 @@ export default function RecordingApp() {
       stopSpeechRecognition();
     };
   }, []); // refs are stable, browser APIs are stable — empty deps is intentional
+
+  useEffect(() => {
+    const applyBrowserLocale = () => {
+      const nextLocale = detectLocale(
+        navigator.languages?.length ? navigator.languages : [navigator.language]
+      );
+      const localized = messages[nextLocale];
+      setLocale(nextLocale);
+      setBrowserLang(navigator.language ?? '');
+      document.documentElement.lang = nextLocale;
+      document.title = localized.pageTitle;
+      document
+        .querySelector<HTMLMetaElement>('meta[name="description"]')
+        ?.setAttribute('content', localized.pageDescription);
+    };
+
+    applyBrowserLocale();
+    window.addEventListener('languagechange', applyBrowserLocale);
+    return () => window.removeEventListener('languagechange', applyBrowserLocale);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -161,6 +176,14 @@ export default function RecordingApp() {
     document.documentElement.style.colorScheme = nextTheme;
     localStorage.setItem('webrecorder-theme', nextTheme);
     setTheme(nextTheme);
+  };
+
+  const t = (key: MessageKey, replacements?: Record<string, string>) => {
+    let value: string = messages[locale][key];
+    for (const [placeholder, replacement] of Object.entries(replacements ?? {})) {
+      value = value.replace(`{${placeholder}}`, replacement);
+    }
+    return value;
   };
 
   useEffect(() => {
@@ -319,7 +342,7 @@ export default function RecordingApp() {
 
       const mimeType = getSupportedMimeType(videoFormat);
       if (!mimeType) {
-        throw new Error(`${videoFormat.toUpperCase()} recording is not supported in this browser.`);
+        throw new Error(t('formatUnsupported', { format: videoFormat.toUpperCase() }));
       }
       setVideoMimeType(mimeType);
 
@@ -360,7 +383,7 @@ export default function RecordingApp() {
         if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
           setError(err.message);
         } else if (err.name === 'NotAllowedError') {
-          setError('Screen sharing permission was denied.');
+          setError(t('permissionDenied'));
         }
       }
       setRecordingState('idle');
@@ -418,11 +441,11 @@ export default function RecordingApp() {
   const controlsLocked = isRequesting || isRecording || isStopping;
 
   const stateLabel: Record<RecordingState, string> = {
-    idle: 'READY',
-    requesting: 'WAITING FOR PERMISSION…',
-    recording: 'RECORDING',
-    stopping: 'PROCESSING…',
-    done: 'COMPLETE',
+    idle: t('ready'),
+    requesting: t('waitingPermission'),
+    recording: t('recording'),
+    stopping: t('processing'),
+    done: t('complete'),
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -444,7 +467,7 @@ export default function RecordingApp() {
           {isRecording && (
             <span
               className={styles.timer}
-              aria-label={`Recording time: ${formatTime(recordingTime)}`}
+              aria-label={`${t('recordingTime')}: ${formatTime(recordingTime)}`}
             >
               {formatTime(recordingTime)}
             </span>
@@ -452,13 +475,13 @@ export default function RecordingApp() {
         </div>
 
         <div className={styles.headerRight}>
-          <span className={styles.buildTag}>Private by design · Browser only</span>
+          <span className={styles.buildTag}>{t('privateBrowserOnly')}</span>
           <button
             className={styles.themeToggle}
             type="button"
             onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label={theme === 'dark' ? t('switchLight') : t('switchDark')}
+            title={theme === 'dark' ? t('switchLight') : t('switchDark')}
           >
             <span className={styles.themeIcon} data-theme={theme} aria-hidden="true" />
           </button>
@@ -468,10 +491,14 @@ export default function RecordingApp() {
       {/* ── Main ── */}
       <main className={styles.main}>
         {/* ── Left sidebar: Controls ── */}
-        <aside className={styles.sidebar} aria-label="Recording controls">
+        <aside className={styles.sidebar} aria-label={t('recordingControls')}>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Audio Source</h2>
-            <div className={styles.radioGroup} role="radiogroup" aria-label="Select audio source">
+            <h2 className={styles.sectionTitle}>{t('audioSource')}</h2>
+            <div
+              className={styles.radioGroup}
+              role="radiogroup"
+              aria-label={t('selectAudioSource')}
+            >
               {(['screen', 'microphone', 'none'] as AudioSource[]).map((src) => (
                 <label
                   key={src}
@@ -494,9 +521,9 @@ export default function RecordingApp() {
                     {src === 'none' && '—'}
                   </span>
                   <span className={styles.radioLabel}>
-                    {src === 'screen' && 'Screen Audio'}
-                    {src === 'microphone' && 'Microphone'}
-                    {src === 'none' && 'No Audio'}
+                    {src === 'screen' && t('screenAudio')}
+                    {src === 'microphone' && t('microphone')}
+                    {src === 'none' && t('noAudio')}
                   </span>
                 </label>
               ))}
@@ -504,8 +531,12 @@ export default function RecordingApp() {
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Video Format</h2>
-            <div className={styles.formatGroup} role="radiogroup" aria-label="Select video format">
+            <h2 className={styles.sectionTitle}>{t('videoFormat')}</h2>
+            <div
+              className={styles.formatGroup}
+              role="radiogroup"
+              aria-label={t('selectVideoFormat')}
+            >
               {(['webm', 'mp4'] as VideoFormat[]).map((format) => {
                 const supported = supportedFormats[format];
                 return (
@@ -519,31 +550,33 @@ export default function RecordingApp() {
                     onClick={() => setVideoFormat(format)}
                   >
                     {format.toUpperCase()}
-                    {!supported && <span className={styles.unsupportedLabel}>Unsupported</span>}
+                    {!supported && (
+                      <span className={styles.unsupportedLabel}>{t('unsupported')}</span>
+                    )}
                   </button>
                 );
               })}
             </div>
-            <p className={styles.formatNote}>Available formats depend on your browser.</p>
+            <p className={styles.formatNote}>{t('formatNote')}</p>
           </section>
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              Speech-to-Text
+              {t('speechToText')}
               {sttAvailable && (
                 <span className={`${styles.badge} ${sttActive ? styles.badgeActive : ''}`}>
-                  {sttActive ? 'LIVE' : 'AUTO'}
+                  {sttActive ? t('live') : t('auto')}
                 </span>
               )}
             </h2>
             {sttAvailable ? (
               <p className={styles.sectionNote}>
-                Transcription starts automatically with recording. Language detected from browser
-                settings{browserLang ? ` (${browserLang})` : ''}.
+                {t('transcriptionNote')}
+                {browserLang ? ` (${browserLang})` : ''}.
               </p>
             ) : (
               <p className={styles.sectionNote} style={{ color: 'var(--amber)' }}>
-                Not supported in this browser. Try Chrome or Edge.
+                {t('transcriptionUnsupported')}
               </p>
             )}
           </section>
@@ -554,21 +587,17 @@ export default function RecordingApp() {
               <button
                 className={styles.btnRecord}
                 onClick={startRecording}
-                aria-label="Start recording"
+                aria-label={t('startRecording')}
               >
                 <span className={styles.btnDot} aria-hidden="true" />
-                Start Recording
+                {t('startRecording')}
               </button>
             )}
 
             {isRequesting && (
-              <button
-                className={styles.btnRecord}
-                disabled
-                aria-label="Requesting screen share permission"
-              >
+              <button className={styles.btnRecord} disabled aria-label={t('requestingPermission')}>
                 <span className={`${styles.btnDot} ${styles.btnDotPulse}`} aria-hidden="true" />
-                Requesting…
+                {t('requesting')}
               </button>
             )}
 
@@ -576,17 +605,17 @@ export default function RecordingApp() {
               <button
                 className={`${styles.btnRecord} ${styles.btnStop}`}
                 onClick={stopRecording}
-                aria-label="Stop recording"
+                aria-label={t('stopRecording')}
               >
                 <span className={styles.btnSquare} aria-hidden="true" />
-                Stop Recording
+                {t('stopRecording')}
               </button>
             )}
 
             {isStopping && (
-              <button className={styles.btnRecord} disabled aria-label="Processing recording">
+              <button className={styles.btnRecord} disabled aria-label={t('processingRecording')}>
                 <span className={`${styles.btnDot} ${styles.btnDotPulse}`} aria-hidden="true" />
-                Processing…
+                {t('processing')}
               </button>
             )}
 
@@ -595,10 +624,10 @@ export default function RecordingApp() {
                 <button
                   className={styles.btnDownload}
                   onClick={downloadVideo}
-                  aria-label="Download video file"
+                  aria-label={t('downloadVideo')}
                 >
                   <DownloadIcon />
-                  Save Video
+                  {t('saveVideo')}
                   {fileSize != null && (
                     <span className={styles.fileSize}>
                       {(fileSize / 1024 / 1024).toFixed(1)} MB
@@ -608,10 +637,10 @@ export default function RecordingApp() {
                 <button
                   className={styles.btnReset}
                   onClick={resetRecording}
-                  aria-label="Start a new recording"
+                  aria-label={t('startNewRecording')}
                 >
                   <ResetIcon />
-                  New Recording
+                  {t('newRecording')}
                 </button>
               </div>
             )}
@@ -626,7 +655,7 @@ export default function RecordingApp() {
         </aside>
 
         {/* ── Center: Preview / Playback ── */}
-        <section className={styles.center} aria-label="Video preview">
+        <section className={styles.center} aria-label={t('videoPreview')}>
           <div className={styles.previewWrap}>
             {/* Live preview */}
             <video
@@ -634,7 +663,7 @@ export default function RecordingApp() {
               className={`${styles.video} ${isRecording ? styles.videoVisible : styles.videoHidden}`}
               muted
               playsInline
-              aria-label="Screen recording preview"
+              aria-label={t('screenPreview')}
             />
 
             {/* Playback after recording */}
@@ -645,7 +674,7 @@ export default function RecordingApp() {
                 src={videoUrl}
                 controls
                 playsInline
-                aria-label="Recorded video playback"
+                aria-label={t('playback')}
               />
             )}
 
@@ -656,13 +685,11 @@ export default function RecordingApp() {
                   <MonitorIcon />
                 </div>
                 <p className={styles.placeholderText}>
-                  {isRequesting
-                    ? 'Select the screen area to record…'
-                    : 'Click "Start Recording" to begin'}
+                  {isRequesting ? t('selectScreen') : t('startHint')}
                 </p>
                 {isRequesting && (
                   <div className={styles.spinnerRow}>
-                    <span className={styles.spinner} aria-label="Loading" />
+                    <span className={styles.spinner} aria-label={t('loading')} />
                   </div>
                 )}
               </div>
@@ -672,9 +699,9 @@ export default function RecordingApp() {
             {isStopping && (
               <div className={styles.placeholder}>
                 <div className={styles.spinnerRow}>
-                  <span className={styles.spinner} aria-label="Processing" />
+                  <span className={styles.spinner} aria-label={t('processingRecording')} />
                 </div>
-                <p className={styles.placeholderText}>Finalizing recording…</p>
+                <p className={styles.placeholderText}>{t('finalizing')}</p>
               </div>
             )}
 
@@ -692,19 +719,19 @@ export default function RecordingApp() {
           {isDone && (
             <dl className={styles.videoMeta}>
               <div className={styles.metaItem}>
-                <dt className={styles.metaKey}>Duration</dt>
+                <dt className={styles.metaKey}>{t('duration')}</dt>
                 <dd className={styles.metaVal}>{formatTime(recordingTime)}</dd>
               </div>
               <span className={styles.metaDivider} aria-hidden="true" />
               <div className={styles.metaItem}>
-                <dt className={styles.metaKey}>Format</dt>
+                <dt className={styles.metaKey}>{t('format')}</dt>
                 <dd className={styles.metaVal}>{videoMimeType.includes('mp4') ? 'MP4' : 'WebM'}</dd>
               </div>
               {fileSize != null && (
                 <>
                   <span className={styles.metaDivider} aria-hidden="true" />
                   <div className={styles.metaItem}>
-                    <dt className={styles.metaKey}>Size</dt>
+                    <dt className={styles.metaKey}>{t('size')}</dt>
                     <dd className={styles.metaVal}>{(fileSize / 1024 / 1024).toFixed(2)} MB</dd>
                   </div>
                 </>
@@ -714,19 +741,20 @@ export default function RecordingApp() {
         </section>
 
         {/* ── Right sidebar: Transcript ── */}
-        <aside className={`${styles.sidebar} ${styles.transcriptSidebar}`} aria-label="Transcript">
+        <aside
+          className={`${styles.sidebar} ${styles.transcriptSidebar}`}
+          aria-label={t('transcript')}
+        >
           <div className={styles.transcriptHeader}>
             <h2 className={styles.sectionTitle}>
-              Transcript
-              {sttActive && (
-                <span className={styles.liveDot} aria-label="Live transcription active" />
-              )}
+              {t('transcript')}
+              {sttActive && <span className={styles.liveDot} aria-label={t('liveTranscription')} />}
             </h2>
             {transcriptEntries.length > 0 && (
               <button
                 className={styles.btnSmall}
                 onClick={downloadTranscript}
-                aria-label="Download transcript as text file"
+                aria-label={t('downloadTranscript')}
               >
                 <DownloadIcon size={11} />
                 .txt
@@ -738,17 +766,13 @@ export default function RecordingApp() {
             className={styles.transcriptBody}
             ref={transcriptRef}
             aria-live="polite"
-            aria-label="Transcript content"
+            aria-label={t('transcriptContent')}
           >
-            {!sttAvailable && (
-              <p className={styles.transcriptEmpty}>
-                Speech recognition is not available in this browser.
-              </p>
-            )}
+            {!sttAvailable && <p className={styles.transcriptEmpty}>{t('speechUnavailable')}</p>}
 
             {sttAvailable && transcriptEntries.length === 0 && !interimText && (
               <p className={styles.transcriptEmpty}>
-                {isIdle || isDone ? 'Transcript will appear here during recording.' : 'Listening…'}
+                {isIdle || isDone ? t('transcriptPlaceholder') : t('listening')}
               </p>
             )}
 

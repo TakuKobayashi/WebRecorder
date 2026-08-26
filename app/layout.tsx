@@ -12,9 +12,9 @@ import './globals.css';
 // ── Metadata ───────────────────────────────────────────────────────────────────
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://web-recorder.taptappun.workers.dev';
 const APP_NAME = 'WebRecorder';
-const TITLE = 'WebRecorder｜無料・インストール不要のブラウザ画面録画';
+const TITLE = 'WebRecorder | Free browser screen recorder';
 const DESCRIPTION =
-  'ブラウザだけで画面録画できる無料のWebツール。画面音声・マイク、WebM・MP4、リアルタイム文字起こしに対応。インストールや会員登録は不要で、録画データは端末内で処理します。';
+  'Record your screen in the browser for free. Capture screen or microphone audio, save as WebM or MP4, and create real-time transcripts. No installation or sign-up required.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -66,14 +66,14 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: APP_NAME,
     type: 'website',
-    locale: 'ja_JP',
-    alternateLocale: ['en_US'],
+    locale: 'en_US',
+    alternateLocale: ['ja_JP'],
     images: [
       {
         url: '/og.png',
         width: 1728,
         height: 907,
-        alt: 'WebRecorder — ブラウザだけで、かんたん画面録画',
+        alt: 'WebRecorder browser screen recording application',
         type: 'image/png',
       },
     ],
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/og.png',
-        alt: 'WebRecorder — ブラウザだけで、かんたん画面録画',
+        alt: 'WebRecorder browser screen recording application',
       },
     ],
   },
@@ -135,7 +135,7 @@ const themeInitScript = `
 // ── Layout ─────────────────────────────────────────────────────────────────────
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
