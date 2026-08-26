@@ -99,16 +99,32 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#07090e',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f7fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#101116' },
+  ],
 };
+
+const themeInitScript = `
+  (() => {
+    try {
+      const saved = localStorage.getItem('recstudio-theme');
+      const theme = saved === 'light' || saved === 'dark'
+        ? saved
+        : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    } catch {}
+  })();
+`;
 
 // ── Layout ─────────────────────────────────────────────────────────────────────
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );

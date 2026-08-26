@@ -7,6 +7,7 @@ import styles from '@/styles/RecordingApp.module.css';
 
 type RecordingState = 'idle' | 'requesting' | 'recording' | 'stopping' | 'done';
 type AudioSource = 'screen' | 'microphone' | 'none';
+type Theme = 'light' | 'dark';
 
 interface TranscriptEntry {
   id: number;
@@ -83,6 +84,7 @@ export default function RecordingApp() {
   const [sttActive, setSttActive] = useState(false);
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [browserLang, setBrowserLang] = useState('');
+  const [theme, setTheme] = useState<Theme>('light');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -107,6 +109,43 @@ export default function RecordingApp() {
       stopSpeechRecognition();
     };
   }, []); // refs are stable, browser APIs are stable — empty deps is intentional
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const savedTheme = localStorage.getItem('recstudio-theme');
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = (nextTheme: Theme) => {
+      root.dataset.theme = nextTheme;
+      root.style.colorScheme = nextTheme;
+      setTheme(nextTheme);
+    };
+
+    applyTheme(
+      savedTheme === 'light' || savedTheme === 'dark'
+        ? savedTheme
+        : mediaQuery.matches
+          ? 'dark'
+          : 'light'
+    );
+
+    const followSystemTheme = (event: MediaQueryListEvent) => {
+      if (!localStorage.getItem('recstudio-theme')) {
+        applyTheme(event.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', followSystemTheme);
+    return () => mediaQuery.removeEventListener('change', followSystemTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = nextTheme;
+    document.documentElement.style.colorScheme = nextTheme;
+    localStorage.setItem('recstudio-theme', nextTheme);
+    setTheme(nextTheme);
+  };
 
   useEffect(() => {
     recordingStateRef.current = recordingState;
@@ -188,7 +227,10 @@ export default function RecordingApp() {
       if (finalText.trim()) {
         const timestamp = formatTimestamp(recordingTimeRef.current);
         const id = ++entryIdRef.current;
-        setTranscriptEntries((prev) => [...prev, { id, text: finalText.trim(), timestamp, isFinal: true }]);
+        setTranscriptEntries((prev) => [
+          ...prev,
+          { id, text: finalText.trim(), timestamp, isFinal: true },
+        ]);
       }
       setInterimText(interim);
     };
@@ -380,14 +422,26 @@ export default function RecordingApp() {
             {stateLabel[recordingState]}
           </span>
           {isRecording && (
-            <span className={styles.timer} aria-label={`Recording time: ${formatTime(recordingTime)}`}>
+            <span
+              className={styles.timer}
+              aria-label={`Recording time: ${formatTime(recordingTime)}`}
+            >
               {formatTime(recordingTime)}
             </span>
           )}
         </div>
 
         <div className={styles.headerRight}>
-          <span className={styles.buildTag}>Browser-native · No server</span>
+          <span className={styles.buildTag}>Private by design · Browser only</span>
+          <button
+            className={styles.themeToggle}
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            <span className={styles.themeIcon} data-theme={theme} aria-hidden="true" />
+          </button>
         </div>
       </header>
 
@@ -415,9 +469,9 @@ export default function RecordingApp() {
                 >
                   <span className={styles.radioMark} />
                   <span className={styles.radioIcon} aria-hidden="true">
-                    {src === 'screen' && '🖥'}
-                    {src === 'microphone' && '🎙'}
-                    {src === 'none' && '🔇'}
+                    {src === 'screen' && '◫'}
+                    {src === 'microphone' && '●'}
+                    {src === 'none' && '—'}
                   </span>
                   <span className={styles.radioLabel}>
                     {src === 'screen' && 'Screen Audio'}
@@ -453,14 +507,22 @@ export default function RecordingApp() {
           {/* ── Action buttons ── */}
           <div className={styles.controlActions}>
             {isIdle && (
-              <button className={styles.btnRecord} onClick={startRecording} aria-label="Start recording">
+              <button
+                className={styles.btnRecord}
+                onClick={startRecording}
+                aria-label="Start recording"
+              >
                 <span className={styles.btnDot} aria-hidden="true" />
                 Start Recording
               </button>
             )}
 
             {isRequesting && (
-              <button className={styles.btnRecord} disabled aria-label="Requesting screen share permission">
+              <button
+                className={styles.btnRecord}
+                disabled
+                aria-label="Requesting screen share permission"
+              >
                 <span className={`${styles.btnDot} ${styles.btnDotPulse}`} aria-hidden="true" />
                 Requesting…
               </button>
@@ -486,7 +548,11 @@ export default function RecordingApp() {
 
             {isDone && (
               <div className={styles.doneActions}>
-                <button className={styles.btnDownload} onClick={downloadVideo} aria-label="Download video file">
+                <button
+                  className={styles.btnDownload}
+                  onClick={downloadVideo}
+                  aria-label="Download video file"
+                >
                   <DownloadIcon />
                   Save Video
                   {fileSize != null && (
@@ -608,7 +674,9 @@ export default function RecordingApp() {
           <div className={styles.transcriptHeader}>
             <h2 className={styles.sectionTitle}>
               Transcript
-              {sttActive && <span className={styles.liveDot} aria-label="Live transcription active" />}
+              {sttActive && (
+                <span className={styles.liveDot} aria-label="Live transcription active" />
+              )}
             </h2>
             {transcriptEntries.length > 0 && (
               <button
@@ -622,7 +690,12 @@ export default function RecordingApp() {
             )}
           </div>
 
-          <div className={styles.transcriptBody} ref={transcriptRef} aria-live="polite" aria-label="Transcript content">
+          <div
+            className={styles.transcriptBody}
+            ref={transcriptRef}
+            aria-live="polite"
+            aria-label="Transcript content"
+          >
             {!sttAvailable && (
               <p className={styles.transcriptEmpty}>
                 Speech recognition is not available in this browser.
@@ -631,9 +704,7 @@ export default function RecordingApp() {
 
             {sttAvailable && transcriptEntries.length === 0 && !interimText && (
               <p className={styles.transcriptEmpty}>
-                {isIdle || isDone
-                  ? 'Transcript will appear here during recording.'
-                  : 'Listening…'}
+                {isIdle || isDone ? 'Transcript will appear here during recording.' : 'Listening…'}
               </p>
             )}
 
@@ -645,7 +716,10 @@ export default function RecordingApp() {
             ))}
 
             {interimText && (
-              <div className={`${styles.transcriptEntry} ${styles.transcriptInterim}`} aria-live="off">
+              <div
+                className={`${styles.transcriptEntry} ${styles.transcriptInterim}`}
+                aria-live="off"
+              >
                 <span className={styles.transcriptTs}>…</span>
                 <span className={styles.transcriptText}>{interimText}</span>
               </div>

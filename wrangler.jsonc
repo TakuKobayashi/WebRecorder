@@ -4,7 +4,7 @@
   //
   // This project uses Workers Assets for pure static file serving.
   // No worker script is required — assets are served directly by Cloudflare.
-  "name": "recstudio",
+  "name": "web-recorder",
   "compatibility_date": "2025-03-01",
   "assets": {
     // Next.js static export output directory
