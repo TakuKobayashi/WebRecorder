@@ -9,7 +9,8 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "wrangler": "wrangler"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.0.0",

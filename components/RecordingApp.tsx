@@ -7,6 +7,7 @@ import styles from '@/styles/RecordingApp.module.css';
 
 type RecordingState = 'idle' | 'requesting' | 'recording' | 'stopping' | 'done';
 type AudioSource = 'screen' | 'microphone' | 'none';
+type VideoFormat = 'webm' | 'mp4';
 type Theme = 'light' | 'dark';
 
 interface TranscriptEntry {
@@ -57,15 +58,18 @@ function formatTimestamp(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function getSupportedMimeType(): string {
-  const candidates = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-    'video/mp4',
-  ];
+function getSupportedMimeType(format: VideoFormat): string {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const candidates =
+    format === 'webm'
+      ? [
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8,opus',
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8',
+          'video/webm',
+        ]
+      : ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4;codecs=h264,aac', 'video/mp4'];
   return candidates.find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
 }
 
@@ -74,6 +78,11 @@ function getSupportedMimeType(): string {
 export default function RecordingApp() {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [audioSource, setAudioSource] = useState<AudioSource>('screen');
+  const [videoFormat, setVideoFormat] = useState<VideoFormat>('webm');
+  const [supportedFormats, setSupportedFormats] = useState<Record<VideoFormat, boolean>>({
+    webm: true,
+    mp4: false,
+  });
   const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [interimText, setInterimText] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -103,6 +112,13 @@ export default function RecordingApp() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     setSttAvailable(!!SR);
     setBrowserLang(navigator.language ?? '');
+
+    const formats = {
+      webm: Boolean(getSupportedMimeType('webm')),
+      mp4: Boolean(getSupportedMimeType('mp4')),
+    };
+    setSupportedFormats(formats);
+    if (!formats.webm && formats.mp4) setVideoFormat('mp4');
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       stopStreams();
@@ -301,7 +317,10 @@ export default function RecordingApp() {
         previewRef.current.play().catch(() => {});
       }
 
-      const mimeType = getSupportedMimeType();
+      const mimeType = getSupportedMimeType(videoFormat);
+      if (!mimeType) {
+        throw new Error(`${videoFormat.toUpperCase()} recording is not supported in this browser.`);
+      }
       setVideoMimeType(mimeType);
 
       const recorder = new MediaRecorder(finalStream, {
@@ -396,6 +415,7 @@ export default function RecordingApp() {
   const isRecording = recordingState === 'recording';
   const isStopping = recordingState === 'stopping';
   const isDone = recordingState === 'done';
+  const controlsLocked = isRequesting || isRecording || isStopping;
 
   const stateLabel: Record<RecordingState, string> = {
     idle: 'READY',
@@ -456,14 +476,14 @@ export default function RecordingApp() {
                 <label
                   key={src}
                   className={`${styles.radioItem} ${audioSource === src ? styles.radioSelected : ''}`}
-                  onClick={() => !isRecording && setAudioSource(src)}
+                  onClick={() => !controlsLocked && setAudioSource(src)}
                   aria-checked={audioSource === src}
                   role="radio"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      if (!isRecording) setAudioSource(src);
+                      if (!controlsLocked) setAudioSource(src);
                     }
                   }}
                 >
@@ -481,6 +501,30 @@ export default function RecordingApp() {
                 </label>
               ))}
             </div>
+          </section>
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Video Format</h2>
+            <div className={styles.formatGroup} role="radiogroup" aria-label="Select video format">
+              {(['webm', 'mp4'] as VideoFormat[]).map((format) => {
+                const supported = supportedFormats[format];
+                return (
+                  <button
+                    key={format}
+                    type="button"
+                    className={`${styles.formatOption} ${videoFormat === format ? styles.formatSelected : ''}`}
+                    role="radio"
+                    aria-checked={videoFormat === format}
+                    disabled={!supported || controlsLocked}
+                    onClick={() => setVideoFormat(format)}
+                  >
+                    {format.toUpperCase()}
+                    {!supported && <span className={styles.unsupportedLabel}>Unsupported</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <p className={styles.formatNote}>Available formats depend on your browser.</p>
           </section>
 
           <section className={styles.section}>

@@ -275,6 +275,57 @@
   font-size: 13px;
   font-weight: 500;
 }
+.formatGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.formatOption {
+  min-height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-1);
+  color: var(--text-dim);
+  font: 600 12px var(--font-mono);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.formatOption:hover:not(:disabled) {
+  border-color: #c9c3ff;
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+.formatOption:focus-visible {
+  outline: 3px solid var(--primary-soft);
+  outline-offset: 2px;
+}
+.formatSelected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.formatOption:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.formatSelected:disabled {
+  opacity: 0.7;
+}
+.unsupportedLabel {
+  font: 400 8px var(--font-sans);
+  letter-spacing: 0;
+}
+.formatNote {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
 .controlActions {
   margin-top: auto;
   padding-top: 16px;
