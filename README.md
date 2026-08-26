@@ -18,6 +18,8 @@ https://web-recorder.taptappun.workers.dev/
 - 文字起こし結果のテキストファイル保存
 - OS設定に連動するライト／ダークモード
 - ブラウザ言語に連動する日本語／英語表示（既定は英語）
+- `/en/`と`/ja/`の言語別URLおよび多言語SEOメタデータ
+- アクセス時のブラウザ言語に応じた自動リダイレクト
 - テーマの手動切り替えとブラウザへの設定保存
 - デスクトップ、タブレット、スマートフォン対応のレスポンシブUI
 
@@ -63,6 +65,7 @@ https://web-recorder.taptappun.workers.dev/
 | フォント       | IBM Plex Sans／IBM Plex Mono            |
 | 画面録画       | MediaDevices API／MediaRecorder API     |
 | 文字起こし     | Web Speech API                          |
+| エッジ処理     | Hono／Cloudflare Workers（TypeScript）  |
 | ホスティング   | Cloudflare Workers Assets               |
 | コード整形     | Prettier                                |
 
@@ -129,6 +132,12 @@ web-recorder/
 │   └── sitemap.ts           # sitemap.xml生成
 ├── components/
 │   └── RecordingApp.tsx     # 録画・文字起こし・テーマ切り替え処理
+├── lib/
+│   ├── i18n.ts              # 日英翻訳辞書と言語判定
+│   └── seo.ts               # 言語別SEOメタデータ
+├── src/
+│   └── index.ts             # Honoによる言語判定・リダイレクトWorker
+├── worker-configuration.d.ts # Wranglerが生成するbinding型
 ├── styles/
 │   └── RecordingApp.module.css
 ├── next.config.ts

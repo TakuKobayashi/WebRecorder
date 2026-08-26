@@ -18,6 +18,15 @@ interface TranscriptEntry {
   isFinal: boolean;
 }
 
+interface WebSpeechRecognitionEvent extends Event {
+  readonly results: SpeechRecognitionResultList;
+  readonly resultIndex: number;
+}
+
+interface WebSpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+}
+
 declare global {
   interface Window {
     SpeechRecognition: new () => SpeechRecognition;
@@ -30,8 +39,8 @@ declare global {
     start(): void;
     stop(): void;
     abort(): void;
-    onresult: ((event: SpeechRecognitionEvent) => void) | null;
-    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+    onresult: ((event: WebSpeechRecognitionEvent) => void) | null;
+    onerror: ((event: WebSpeechRecognitionErrorEvent) => void) | null;
     onend: (() => void) | null;
     onstart: (() => void) | null;
   }
@@ -69,7 +78,7 @@ function getSupportedMimeType(format: VideoFormat): string {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function RecordingApp() {
+export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale }) {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [audioSource, setAudioSource] = useState<AudioSource>('screen');
   const [videoFormat, setVideoFormat] = useState<VideoFormat>('webm');
@@ -88,7 +97,7 @@ export default function RecordingApp() {
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [browserLang, setBrowserLang] = useState('');
   const [theme, setTheme] = useState<Theme>('light');
-  const [locale, setLocale] = useState<Locale>('en');
+  const [locale, setLocale] = useState<Locale>(fixedLocale ?? 'en');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -123,9 +132,9 @@ export default function RecordingApp() {
 
   useEffect(() => {
     const applyBrowserLocale = () => {
-      const nextLocale = detectLocale(
-        navigator.languages?.length ? navigator.languages : [navigator.language]
-      );
+      const nextLocale =
+        fixedLocale ??
+        detectLocale(navigator.languages?.length ? navigator.languages : [navigator.language]);
       const localized = messages[nextLocale];
       setLocale(nextLocale);
       setBrowserLang(navigator.language ?? '');
@@ -137,9 +146,9 @@ export default function RecordingApp() {
     };
 
     applyBrowserLocale();
-    window.addEventListener('languagechange', applyBrowserLocale);
+    if (!fixedLocale) window.addEventListener('languagechange', applyBrowserLocale);
     return () => window.removeEventListener('languagechange', applyBrowserLocale);
-  }, []);
+  }, [fixedLocale]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -250,7 +259,7 @@ export default function RecordingApp() {
       setSttActive(true);
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: WebSpeechRecognitionEvent) => {
       let finalText = '';
       let interim = '';
 
@@ -274,7 +283,7 @@ export default function RecordingApp() {
       setInterimText(interim);
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
       if (event.error === 'no-speech' || event.error === 'aborted') return;
       // non-fatal: log and continue
       console.warn('SpeechRecognition error:', event.error);
