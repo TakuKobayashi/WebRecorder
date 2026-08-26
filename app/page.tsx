@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import RecordingApp from '@/components/RecordingApp';
 
 export const metadata: Metadata = {
-  title: 'RecStudio — Browser Screen Recorder',
+  title: 'WebRecorder — Browser Screen Recorder',
 };
 
 export default function Page() {

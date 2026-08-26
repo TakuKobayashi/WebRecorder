@@ -128,7 +128,7 @@ export default function RecordingApp() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const savedTheme = localStorage.getItem('recstudio-theme');
+    const savedTheme = localStorage.getItem('webrecorder-theme');
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const applyTheme = (nextTheme: Theme) => {
@@ -146,7 +146,7 @@ export default function RecordingApp() {
     );
 
     const followSystemTheme = (event: MediaQueryListEvent) => {
-      if (!localStorage.getItem('recstudio-theme')) {
+      if (!localStorage.getItem('webrecorder-theme')) {
         applyTheme(event.matches ? 'dark' : 'light');
       }
     };
@@ -159,7 +159,7 @@ export default function RecordingApp() {
     const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = nextTheme;
     document.documentElement.style.colorScheme = nextTheme;
-    localStorage.setItem('recstudio-theme', nextTheme);
+    localStorage.setItem('webrecorder-theme', nextTheme);
     setTheme(nextTheme);
   };
 
@@ -433,7 +433,7 @@ export default function RecordingApp() {
         <div className={styles.logo}>
           <span className={styles.logoDot} data-state={recordingState} aria-hidden="true" />
           <span className={styles.logoText}>
-            REC<span>STUDIO</span>
+            WEB<span>RECORDER</span>
           </span>
         </div>
 

@@ -33,11 +33,15 @@
   box-shadow: 0 7px 16px rgba(109, 93, 252, 0.22);
 }
 .logoDot::after {
-  content: '';
+  content: 'W';
   position: absolute;
-  inset: 9px;
-  border-radius: 50%;
-  background: white;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.08em;
 }
 .logoDot[data-state='recording'] {
   background: var(--rec);

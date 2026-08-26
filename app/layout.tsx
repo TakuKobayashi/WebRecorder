@@ -10,9 +10,9 @@ import '@fontsource/ibm-plex-sans/600.css';
 import './globals.css';
 
 // ── Metadata ───────────────────────────────────────────────────────────────────
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://recstudio.example.com';
-const APP_NAME = 'RecStudio';
-const TITLE = 'RecStudio — Browser Screen Recorder';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://web-recorder.taptappun.workers.dev';
+const APP_NAME = 'WebRecorder';
+const TITLE = 'WebRecorder — Browser Screen Recorder';
 const DESCRIPTION =
   'Record your screen directly in the browser. Choose screen audio or microphone, get real-time speech-to-text transcription, and save your recording as a video file — no installation, no server required.';
 
@@ -108,7 +108,7 @@ export const viewport: Viewport = {
 const themeInitScript = `
   (() => {
     try {
-      const saved = localStorage.getItem('recstudio-theme');
+      const saved = localStorage.getItem('webrecorder-theme');
       const theme = saved === 'light' || saved === 'dark'
         ? saved
         : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

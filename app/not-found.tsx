@@ -36,7 +36,7 @@ export default function NotFound() {
           letterSpacing: '0.08em',
         }}
       >
-        ← Back to RecStudio
+        ← Back to WebRecorder
       </Link>
     </div>
   );

@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 export const dynamic = 'force-static';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://recstudio.example.com';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://web-recorder.taptappun.workers.dev';
 
 export default function robots(): MetadataRoute.Robots {
   return {

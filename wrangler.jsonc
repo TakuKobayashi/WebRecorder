@@ -1,5 +1,5 @@
 {
-  // RecStudio — Cloudflare Workers Assets
+  // WebRecorder — Cloudflare Workers Assets
   // Deploy: npm run deploy  (builds Next.js then runs wrangler deploy)
   //
   // This project uses Workers Assets for pure static file serving.
