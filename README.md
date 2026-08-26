@@ -1,96 +1,143 @@
 # RecStudio
 
-Browser-native screen recorder with real-time Speech-to-Text transcription.  
-No server. No installation. Built with Next.js 15 (App Router, static export) and deployed to Cloudflare Workers Assets.
+ブラウザだけで画面録画とリアルタイム文字起こしができるWebアプリケーションです。インストールやアカウント登録は不要で、録画データはサーバーへ送信せず端末内で処理します。
 
----
+## 公開URL
 
-## Features
+https://web-recorder.taptappun.workers.dev/
 
-- **Screen recording** via `getDisplayMedia` — records video + optional audio
-- **Audio source selection** — Screen audio, Microphone, or No audio
-- **Real-time transcription** — Web Speech API (`SpeechRecognition`), auto-restarts on segment end
-- **Download** recorded video (WebM / MP4) and transcript (`.txt`)
-- **Fully client-side** — no backend, no data leaves the browser
+## 主な機能
 
-## Tech
+- 画面、ウィンドウ、ブラウザタブの録画
+- 画面音声、マイク、音声なしの切り替え
+- WebM／MP4から録画形式を選択（ブラウザが対応する形式のみ）
+- Web Speech APIによるリアルタイム文字起こし
+- 録画中のプレビューと経過時間表示
+- 録画終了後の動画再生
+- 動画ファイル（WebMまたはMP4）の保存
+- 文字起こし結果のテキストファイル保存
+- OS設定に連動するライト／ダークモード
+- テーマの手動切り替えとブラウザへの設定保存
+- デスクトップ、タブレット、スマートフォン対応のレスポンシブUI
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15 (App Router, `output: 'export'`) |
-| Language | TypeScript 5 |
-| Styling | CSS Modules (no Tailwind) |
-| Fonts | `next/font` → IBM Plex Mono + Sans |
-| Hosting | Cloudflare Workers Assets |
-| Linting | ESLint (flat config) + Prettier |
+## 使い方
 
-## Development
+1. 「Audio Source」から使用する音声を選択します。
+2. 「Video Format」からWebMまたはMP4を選択します。
+3. 「Start Recording」を押します。
+4. ブラウザの共有ダイアログで録画対象を選択します。
+5. 録画を終了するときは「Stop Recording」を押します。
+6. 録画内容を確認し、「Save Video」から動画を保存します。
+7. 文字起こし結果がある場合は、Transcript欄の「.txt」から保存できます。
+
+画面共有中にブラウザ側の「共有を停止」を押した場合も、録画は自動的に終了します。
+
+## プライバシー
+
+録画処理とファイル生成はブラウザ内で完結します。録画した映像や音声をアプリケーションのサーバーへアップロードする処理はありません。
+
+文字起こしにはブラウザのWeb Speech APIを使用します。その処理方法やデータの取り扱いは、利用しているブラウザおよび音声認識サービスの仕様に依存します。
+
+## 対応ブラウザ
+
+画面録画には `MediaDevices.getDisplayMedia`、動画生成には `MediaRecorder` を使用します。
+
+| 機能                   | Chrome | Edge | Firefox  | Safari                           |
+| ---------------------- | ------ | ---- | -------- | -------------------------------- |
+| 画面録画               | 対応   | 対応 | 対応     | 対応（バージョンにより制限あり） |
+| 画面音声               | 対応   | 対応 | 制限あり | 制限あり                         |
+| マイク音声             | 対応   | 対応 | 対応     | 対応                             |
+| リアルタイム文字起こし | 対応   | 対応 | 非対応   | 対応状況はバージョン依存         |
+
+ブラウザやOSによって、共有できる対象や画面音声の取得可否が異なります。すべての機能を利用する場合は、最新版のGoogle ChromeまたはMicrosoft Edgeを推奨します。
+
+## 技術構成
+
+| 項目           | 使用技術                                |
+| -------------- | --------------------------------------- |
+| フレームワーク | Next.js 15（App Router／Static Export） |
+| UI             | React 19                                |
+| 言語           | TypeScript 5                            |
+| スタイル       | CSS Modules                             |
+| フォント       | IBM Plex Sans／IBM Plex Mono            |
+| 画面録画       | MediaDevices API／MediaRecorder API     |
+| 文字起こし     | Web Speech API                          |
+| ホスティング   | Cloudflare Workers Assets               |
+| コード整形     | Prettier                                |
+
+## ローカル開発
+
+### 必要な環境
+
+- Node.js 20以上
+- pnpm
+
+### セットアップ
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run lint
-npm run format
+pnpm install
+pnpm dev
 ```
 
-## Build & Deploy
+起動後、http://localhost:3000/ を開きます。
+
+画面共有APIの動作にはSecure Contextが必要です。ローカルでは `localhost`、公開環境ではHTTPSを使用してください。
+
+### 主なコマンド
 
 ```bash
-npm run build      # generates ./out
-npx wrangler deploy
-# or:
-npm run deploy     # build + deploy in one step
+pnpm dev           # 開発サーバーを起動
+pnpm build         # 静的サイトをoutディレクトリへ出力
+pnpm format        # Prettierでコードを整形
+pnpm format:check  # コードの整形状態を確認
+pnpm deploy        # ビルド後、Cloudflare Workersへデプロイ
 ```
 
-### Wrangler config (`wrangler.jsonc`)
+## 環境変数
 
-- `assets.directory` → `./out`
-- `assets.not_found_handling` → `404-page` (serves `out/404/index.html`)
-- `assets.html_handling` → `auto-trailing-slash` (matches Next.js `trailingSlash: true`)
+| 変数名                | 説明                                                  |
+| --------------------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL` | メタデータ、サイトマップ、robots.txtで使用する公開URL |
 
-## Environment Variables
+ローカルで設定する場合は、プロジェクト直下に `.env.local` を作成します。
 
-| Variable | Default | Description |
-|---|---|---|
-| `NEXT_PUBLIC_APP_URL` | `https://recstudio.example.com` | Used for `metadataBase`, sitemap, robots |
-
-Set this in a `.env.local` file or in Cloudflare Pages / Workers environment settings.
-
-## Browser Support
-
-| Feature | Chrome | Firefox | Safari | Edge |
-|---|---|---|---|---|
-| Screen recording | ✅ | ✅ | ✅ (13+) | ✅ |
-| Screen audio | ✅ | ❌ | ❌ | ✅ |
-| Speech-to-Text | ✅ | ❌ | ✅ | ✅ |
-
-> Speech recognition requires Chrome, Edge, or Safari. Recording works in all modern browsers.
-
-## SEO
-
-- `metadata` object in `app/layout.tsx` (title template, description, keywords, OG, Twitter card)
-- Page-level `metadata` override in `app/page.tsx`
-- `/sitemap.xml` and `/robots.txt` auto-generated via Next.js metadata routes
-- `NEXT_PUBLIC_APP_URL` drives `metadataBase`, sitemap URL, and robots `host`
-
-## Project Structure
-
+```env
+NEXT_PUBLIC_APP_URL=https://web-recorder.taptappun.workers.dev
 ```
-recstudio/
+
+## ビルドとデプロイ
+
+Next.jsのStatic Exportで生成された `out` ディレクトリを、Cloudflare Workers Assetsから配信します。
+
+```bash
+pnpm deploy
+```
+
+Cloudflareへの認証や対象アカウントの設定は、事前にWranglerで完了している必要があります。デプロイ設定は `wrangler.jsonc` に記載されています。
+
+## ディレクトリ構成
+
+```text
+web-recorder/
 ├── app/
-│   ├── globals.css          # CSS variables + base reset
-│   ├── layout.tsx           # Root layout, fonts, full SEO metadata
-│   ├── page.tsx             # Entry — renders <RecordingApp>
-│   ├── not-found.tsx        # 404 page
-│   ├── robots.ts            # /robots.txt
-│   └── sitemap.ts           # /sitemap.xml
+│   ├── globals.css          # 共通スタイルとテーマ変数
+│   ├── layout.tsx           # レイアウト、SEO、テーマ初期化
+│   ├── page.tsx             # トップページ
+│   ├── not-found.tsx        # 404ページ
+│   ├── robots.ts            # robots.txt生成
+│   └── sitemap.ts           # sitemap.xml生成
 ├── components/
-│   └── RecordingApp.tsx     # 'use client' — all recording/STT logic
+│   └── RecordingApp.tsx     # 録画・文字起こし・テーマ切り替え処理
 ├── styles/
 │   └── RecordingApp.module.css
-├── public/                  # Static assets (favicon, OG image…)
-├── wrangler.jsonc
 ├── next.config.ts
-├── prettier.config.js
-└── eslint.config.mjs
+├── wrangler.jsonc
+└── package.json
 ```
+
+## 制限事項
+
+- 選択できる録画形式はブラウザが対応するMIMEタイプによって異なります。未対応の形式は選択できません。
+- 画面音声を含めるには、ブラウザの共有ダイアログで音声共有を有効にする必要があります。
+- 文字起こしの精度や対応言語は、ブラウザの音声認識機能に依存します。
+- 長時間の録画ではメモリ使用量と生成ファイルサイズが大きくなる可能性があります。
