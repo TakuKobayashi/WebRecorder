@@ -56,6 +56,8 @@ const en = {
   transcriptPlaceholder: 'Transcript will appear here during recording.',
   listening: 'Listening…',
   permissionDenied: 'Screen sharing permission was denied.',
+  screenAudioUnavailable:
+    'No screen audio was shared. Enable tab audio or system audio in the sharing dialog and try again.',
   formatUnsupported: '{format} recording is not supported in this browser.',
 } as const;
 
@@ -116,6 +118,8 @@ const ja: Record<MessageKey, string> = {
   transcriptPlaceholder: '録画中の文字起こしがここに表示されます。',
   listening: '音声を認識しています…',
   permissionDenied: '画面共有が許可されませんでした。',
+  screenAudioUnavailable:
+    '画面音声が共有されていません。共有画面で「タブの音声」または「システム音声」を有効にして、もう一度お試しください。',
   formatUnsupported: 'このブラウザは{format}形式の録画に対応していません。',
 };
 

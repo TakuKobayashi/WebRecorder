@@ -36,7 +36,7 @@ declare global {
     continuous: boolean;
     interimResults: boolean;
     lang: string;
-    start(): void;
+    start(audioTrack?: MediaStreamTrack): void;
     stop(): void;
     abort(): void;
     onresult: ((event: WebSpeechRecognitionEvent) => void) | null;
@@ -246,7 +246,7 @@ export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale 
     setInterimText('');
   };
 
-  const startSpeechRecognition = useCallback(() => {
+  const startSpeechRecognition = (audioTrack: MediaStreamTrack, microphoneFallback: boolean) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
 
@@ -291,11 +291,17 @@ export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale 
 
     recognition.onend = () => {
       // Restart automatically while recording
-      if (recordingStateRef.current === 'recording') {
+      if (recordingStateRef.current === 'recording' && audioTrack.readyState === 'live') {
         try {
-          recognition.start();
+          recognition.start(audioTrack);
         } catch {
-          // ignore restart errors
+          if (microphoneFallback) {
+            try {
+              recognition.start();
+            } catch {
+              // ignore restart errors
+            }
+          }
         }
       } else {
         setSttActive(false);
@@ -304,12 +310,20 @@ export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale 
     };
 
     try {
-      recognition.start();
+      recognition.start(audioTrack);
       speechRecRef.current = recognition;
     } catch {
-      // ignore
+      // Older implementations only accept the default microphone as input.
+      if (microphoneFallback) {
+        try {
+          recognition.start();
+          speechRecRef.current = recognition;
+        } catch {
+          // Speech recognition remains unavailable for this recording.
+        }
+      }
     }
-  }, []);
+  };
 
   // ── Recording ─────────────────────────────────────────────────────────────
   const startRecording = async () => {
@@ -325,21 +339,31 @@ export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale 
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: { ideal: 30 }, displaySurface: 'monitor' } as MediaTrackConstraints,
         audio: audioSource === 'screen',
-      });
+        systemAudio: audioSource === 'screen' ? 'include' : 'exclude',
+        windowAudio: audioSource === 'screen' ? 'system' : 'exclude',
+      } as DisplayMediaStreamOptions);
 
       screenStreamRef.current = screenStream;
 
       let finalStream: MediaStream;
+      let transcriptionTrack: MediaStreamTrack | null = null;
 
       if (audioSource === 'microphone') {
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         micStreamRef.current = micStream;
+        transcriptionTrack = micStream.getAudioTracks()[0] ?? null;
         finalStream = new MediaStream([
           ...screenStream.getVideoTracks(),
           ...micStream.getAudioTracks(),
         ]);
-      } else {
+      } else if (audioSource === 'screen') {
+        transcriptionTrack = screenStream.getAudioTracks()[0] ?? null;
+        if (!transcriptionTrack) {
+          throw new Error(t('screenAudioUnavailable'));
+        }
         finalStream = screenStream;
+      } else {
+        finalStream = new MediaStream(screenStream.getVideoTracks());
       }
 
       // Show preview (muted — avoids echo)
@@ -386,7 +410,9 @@ export default function RecordingApp({ locale: fixedLocale }: { locale?: Locale 
       recorder.start(500);
       setRecordingState('recording');
       startTimer();
-      startSpeechRecognition();
+      if (transcriptionTrack) {
+        startSpeechRecognition(transcriptionTrack, audioSource === 'microphone');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
