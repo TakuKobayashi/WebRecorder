@@ -108,6 +108,11 @@ export const metadata: Metadata = {
   // ── App metadata ─────────────────────────────────────────
   applicationName: APP_NAME,
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [{ url: '/icon.png', type: 'image/png', sizes: '1254x1254' }],
+    shortcut: '/icon.png',
+    apple: [{ url: '/icon.png', type: 'image/png', sizes: '1254x1254' }],
+  },
 };
 
 export const viewport: Viewport = {
