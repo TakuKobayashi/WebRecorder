@@ -65,8 +65,7 @@ https://web-recorder.taptappun.workers.dev/
 | フォント       | IBM Plex Sans／IBM Plex Mono            |
 | 画面録画       | MediaDevices API／MediaRecorder API     |
 | 文字起こし     | Web Speech API                          |
-| エッジ処理     | Hono／Cloudflare Workers（TypeScript）  |
-| ホスティング   | Cloudflare Workers Assets               |
+| ホスティング   | Cloudflare Workers Static Assets        |
 | コード整形     | Prettier                                |
 
 ## ローカル開発
@@ -135,9 +134,6 @@ web-recorder/
 ├── lib/
 │   ├── i18n.ts              # 日英翻訳辞書と言語判定
 │   └── seo.ts               # 言語別SEOメタデータ
-├── src/
-│   └── index.ts             # Honoによる言語判定・リダイレクトWorker
-├── worker-configuration.d.ts # Wranglerが生成するbinding型
 ├── styles/
 │   └── RecordingApp.module.css
 ├── next.config.ts

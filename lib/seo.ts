@@ -17,7 +17,7 @@ export function localizedMetadata(locale: Locale): Metadata {
     description,
     alternates: {
       canonical: path,
-      languages: { 'en-US': '/en/', 'ja-JP': '/ja/', 'x-default': '/en/' },
+      languages: { 'en-US': '/en/', 'ja-JP': '/ja/', 'x-default': '/' },
     },
     openGraph: {
       title,
